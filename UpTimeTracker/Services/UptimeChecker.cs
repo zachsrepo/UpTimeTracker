@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using UpTimeTracker.Models;
 using Microsoft.Data.SqlClient;
+using System.Net.NetworkInformation;
 
 public class UptimeChecker
 {
@@ -48,6 +49,14 @@ public class UptimeChecker
                     await conn.OpenAsync();
                     isUp = true;
                     statusCode = 200;
+                }
+                else if (service.Type == "ping")
+                {
+                    using var ping = new Ping();
+                    var reply = await ping.SendPingAsync(service.Url, 3000); // 3 second timeout
+
+                    isUp = reply.Status == IPStatus.Success;
+                    statusCode = isUp ? 200 : 0;
                 }
             }
             catch
